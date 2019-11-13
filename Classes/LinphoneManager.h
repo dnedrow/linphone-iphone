@@ -34,7 +34,8 @@
 #include "linphone/linphonecore.h"
 #include "bctoolbox/list.h"
 #import "OrderedDictionary.h"
-#import "ProviderDelegate.h"
+
+#import "linphoneapp-Swift.h"
 
 extern NSString *const LINPHONERC_APPLICATION_KEY;
 
@@ -190,7 +191,7 @@ typedef struct _LinphoneManagerSounds {
 
 - (void)shouldPresentLinkPopup;
 
-- (void)setProviderDelegate:(ProviderDelegate *)del;
+- (void)setCallManager:(CallManager *)cManager;
 
 - (void) setLinphoneManagerAddressBookMap:(OrderedDictionary*) addressBook;
 - (OrderedDictionary*) getLinphoneManagerAddressBookMap;
@@ -203,7 +204,7 @@ typedef struct _LinphoneManagerSounds {
 - (void)loadAvatar;
 - (void)migrationPerAccount;
 
-@property ProviderDelegate *providerDelegate;
+@property CallManager *callManager;
 
 @property (readonly) BOOL isTesting;
 @property(readonly, strong) FastAddressBook *fastAddressBook;

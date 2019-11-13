@@ -5,7 +5,7 @@ source "https://github.com/CocoaPods/Specs.git"
 
 def basic_pods
 	if ENV['PODFILE_PATH'].nil?
-		pod 'linphone-sdk/basic-frameworks', '> 4.3.0-alpha'
+		pod 'linphone-sdk', '> 4.3.0-alpha'
 		else
 		pod 'linphone-sdk/basic-frameworks', :path => ENV['PODFILE_PATH']  # loacl sdk
 	end
@@ -19,19 +19,7 @@ def basic_pods
 	end
 end
 
-target 'liblinphoneTester' do
-  # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
-  use_frameworks!
 
-  # Pods for liblinphoneTester
-  basic_pods
-  
-  target 'liblinphoneTesterTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
-end
 
 target 'linphone' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
@@ -41,11 +29,7 @@ target 'linphone' do
   basic_pods
 	pod 'SVProgressHUD'
 
-  target 'linphoneTests' do
-    inherit! :search_paths
-		pod 'KIF', :configurations => ['Debug']
-    # Pods for testing
-  end
+
 
 end
 

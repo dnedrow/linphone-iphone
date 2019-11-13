@@ -120,7 +120,7 @@
 			break;
 		}
 		case UIPauseButtonType_Conference: {
-			if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
+			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
 				NSString *key = (NSString *)[LinphoneManager.instance.providerDelegate.uuids allKeys][0];
 				NSUUID *uuid = (NSUUID *)[LinphoneManager.instance.providerDelegate.uuids objectForKey:key];
 				if (!uuid) {
@@ -134,7 +134,7 @@
 			}
 			linphone_core_enter_conference(LC);
 			// Fake event
-			[NSNotificationCenter.defaultCenter postNotificationName:kLinphoneCallUpdate object:self];
+			[NSNotificationCenter.defaultCenter postNotificationName:kLinphoneCallUpdate object:self];*/
 			break;
 		}
 		case UIPauseButtonType_CurrentCall: {

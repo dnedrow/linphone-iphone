@@ -621,7 +621,7 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 				if ([LinphoneManager.instance lpConfigBoolForKey:@"accept_early_media" inSection:@"app"] && [LinphoneManager.instance lpConfigBoolForKey:@"pref_accept_early_media"]) {
 					[PhoneMainView.instance displayIncomingCall:call];
 				} else {
-#if !TARGET_IPHONE_SIMULATOR
+/*#if !TARGET_IPHONE_SIMULATOR
 			NSString *callId = [NSString stringWithUTF8String:linphone_call_log_get_call_id(linphone_call_get_call_log(call))];
 			NSUUID *uuid = [NSUUID UUID];
 			[LinphoneManager.instance.providerDelegate.calls setObject:callId forKey:uuid];
@@ -632,7 +632,7 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 			[LinphoneManager.instance.providerDelegate reportIncomingCall:call withUUID:uuid handle:address video:video];
 #else
 			[PhoneMainView.instance displayIncomingCall:call];
-#endif
+#endif*/
 				}
 			} else if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
 				// Create a UNNotification
@@ -782,7 +782,7 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 			NSString *callId2 = call_id2
 				? [NSString stringWithUTF8String:call_id2]
 				: @"";
-			NSUUID *uuid = (NSUUID *)[self.providerDelegate.uuids objectForKey:callId2];
+			/*NSUUID *uuid = (NSUUID *)[self.providerDelegate.uuids objectForKey:callId2];
 			if (uuid) {
 				LinphoneCall *callKit_call = (LinphoneCall *)linphone_core_get_calls(LC)
 					? linphone_core_get_calls(LC)->data
@@ -825,7 +825,7 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 					[self.providerDelegate.uuids removeAllObjects];
 					[self.providerDelegate.calls removeAllObjects];
 				}
-			}
+			}*/
 		} else {
 			if (data != nil && data->notification != nil) {
 				LinphoneCallLog *log = linphone_call_get_call_log(call);
@@ -1700,7 +1700,7 @@ static BOOL libStarted = FALSE;
 
 	// create linphone core
 	[self createLinphoneCore];
-	[self.providerDelegate config];
+	//[self.providerDelegate config];
 	_iapManager = [[InAppProductsManager alloc] init];
 
 	// - Security fix - remove multi transport migration, because it enables tcp or udp, if by factoring settings only
@@ -1823,7 +1823,6 @@ void popup_link_account_cb(LinphoneAccountCreator *creator, LinphoneAccountCreat
 
 	LinphoneFactory *factory = linphone_factory_get();
 	LinphoneCoreCbs *cbs = linphone_factory_create_core_cbs(factory);
-	linphone_core_cbs_set_call_state_changed(cbs, linphone_iphone_call_state);
 	linphone_core_cbs_set_registration_state_changed(cbs,linphone_iphone_registration_state);
 	linphone_core_cbs_set_notify_presence_received_for_uri_or_tel(cbs, linphone_iphone_notify_presence_received_for_uri_or_tel);
 	linphone_core_cbs_set_authentication_requested(cbs, linphone_iphone_popup_password_request);
@@ -1842,6 +1841,12 @@ void popup_link_account_cb(LinphoneAccountCreator *creator, LinphoneAccountCreat
 
 	theLinphoneCore = linphone_factory_create_core_with_config_3(factory, _configDb, NULL);
 	linphone_core_add_callbacks(theLinphoneCore, cbs);
+
+	linphone_factory_set_core(factory, theLinphoneCore);
+	
+	// For now, add call changed callback by swift
+	[self.callManager addCoreDelegate];
+	
 	linphone_core_start(theLinphoneCore);
 
 	// Let the core handle cbs
@@ -1902,7 +1907,8 @@ void popup_link_account_cb(LinphoneAccountCreator *creator, LinphoneAccountCreat
 			[ftd stopAndDestroy];
 		}
 		[_fileTransferDelegates removeAllObjects];
-
+		
+		//linphone_factory_set_core(linphone_factory_get(), NULL);
 		linphone_core_destroy(theLinphoneCore);
 		LOGI(@"Destroy linphonecore %p", theLinphoneCore);
 		theLinphoneCore = nil;
@@ -2485,7 +2491,7 @@ static int comp_call_state_paused(const LinphoneCall *call, const void *param) {
 		return;
 	}
 
-	if (linphone_core_get_calls_nb(theLinphoneCore) < 1 &&
+	/*if (linphone_core_get_calls_nb(theLinphoneCore) < 1 &&
 	    floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max &&
 	    self.providerDelegate.callKitCalls < 1) {
 		self.providerDelegate.callKitCalls++;
@@ -2502,7 +2508,7 @@ static int comp_call_state_paused(const LinphoneCall *call, const void *param) {
 			}];
 	} else {
 		[self doCall:iaddr];
-	}
+	}*/
 }
 
 - (BOOL)doCall:(const LinphoneAddress *)iaddr {

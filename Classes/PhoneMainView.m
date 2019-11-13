@@ -374,7 +374,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 		}
 		case LinphoneCallPausedByRemote:
 		case LinphoneCallConnected: {
-			if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
+			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
 				NSString *callId =
 					[NSString stringWithUTF8String:linphone_call_log_get_call_id(linphone_call_get_call_log(call))];
 				NSUUID *uuid = [LinphoneManager.instance.providerDelegate.uuids objectForKey:callId];
@@ -382,12 +382,12 @@ static RootViewManager *rootViewManagerInstance = nil;
 					[LinphoneManager.instance.providerDelegate.provider reportOutgoingCallWithUUID:uuid
 																		   startedConnectingAtDate:nil];
 				}
-			}
+			}*/
 			break;
 		}
 		case LinphoneCallStreamsRunning: {
 			[self changeCurrentView:CallView.compositeViewDescription];
-			if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
+			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
 				NSString *callId =
 					[NSString stringWithUTF8String:linphone_call_log_get_call_id(linphone_call_get_call_log(call))];
 				NSUUID *uuid = [LinphoneManager.instance.providerDelegate.uuids objectForKey:callId];
@@ -403,7 +403,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 					update.supportsUngrouping = TRUE;
 					[LinphoneManager.instance.providerDelegate.provider reportCallWithUUID:uuid updated:update];
 				}
-			}
+			}*/
 			break;
 		}
 		case LinphoneCallUpdatedByRemote: {
@@ -437,7 +437,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 			break;
 		case LinphoneCallOutgoingEarlyMedia:
 		case LinphoneCallOutgoingProgress: {
-			if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call &&
+			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call &&
 				(linphone_core_get_calls_nb(LC) < 2)) {
 				// Link call ID to UUID
 				NSString *callId =
@@ -448,7 +448,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 					[LinphoneManager.instance.providerDelegate.uuids setObject:uuid forKey:callId];
 					[LinphoneManager.instance.providerDelegate.calls setObject:callId forKey:uuid];
 				}
-			}
+			}*/
 			break;
 		}
 		case LinphoneCallOutgoingRinging:
@@ -458,7 +458,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 		case LinphoneCallReleased:
 			break;
 		case LinphoneCallResuming: {
-			if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
+			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
 				NSUUID *uuid = (NSUUID *)[LinphoneManager.instance.providerDelegate.uuids
 					objectForKey:[NSString stringWithUTF8String:linphone_call_log_get_call_id(
 																	linphone_call_get_call_log(call))]];
@@ -470,7 +470,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 				[LinphoneManager.instance.providerDelegate.controller requestTransaction:tr
 																			  completion:^(NSError *err){
 																			  }];
-			}
+			}*/
 			break;
 		}
 		case LinphoneCallUpdating:

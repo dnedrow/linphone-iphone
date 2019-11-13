@@ -251,10 +251,9 @@
 	BOOL background_mode = [instance lpConfigBoolForKey:@"backgroundmode_preference"];
 	BOOL start_at_boot = [instance lpConfigBoolForKey:@"start_at_boot_preference"];
 	[self registerForNotifications]; // Register for notifications must be done ASAP to give a chance for first SIP register to be done with right token. Specially true in case of remote provisionning or re-install with new type of signing certificate, like debug to release.
-	if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
-		self.del = [[ProviderDelegate alloc] init];
-		[LinphoneManager.instance setProviderDelegate:self.del];
-	}
+
+	self.callManager = [CallManager instance];
+	[LinphoneManager.instance setCallManager:self.callManager];
 
 	if (state == UIApplicationStateBackground) {
 		// we've been woken up directly to background;
@@ -428,12 +427,6 @@
 		return;
 	}
 	
-	// Tell the core to make sure that we are registered.
-	// It will initiate socket connections, which seems to be required.
-	// Indeed it is observed that if no network action is done in the notification handler, then
-	// iOS kills us.
-	linphone_core_ensure_registered(LC);
-
 	NSString *uuid = [NSString stringWithFormat:@"<urn:uuid:%@>", [LinphoneManager.instance lpConfigStringForKey:@"uuid" inSection:@"misc" withDefault:NULL]];
 	NSString *sipInstance = [aps objectForKey:@"uuid"];
 	if (sipInstance && uuid && ![sipInstance isEqualToString:uuid]) {
@@ -469,10 +462,17 @@
 			notification.alertTitle = @"APN Pusher";
 			[[UIApplication sharedApplication] presentLocalNotificationNow:notification];
 		}
-	} else
+	} else {
+		//[self.callManager displayIncomingCallWithUuid:[NSUUID UUID] handle:@"Calling" hasVideo:false completion:nil];
 		[LinphoneManager.instance addPushCallId:callId];
+	}
 
     LOGI(@"Notification [%p] processed", userInfo);
+	// Tell the core to make sure that we are registered.
+	// It will initiate socket connections, which seems to be required.
+	// Indeed it is observed that if no network action is done in the notification handler, then
+	// iOS kills us.
+	linphone_core_ensure_registered(LC);
 }
 
 - (BOOL)addLongTaskIDforCallID:(NSString *)callId {
