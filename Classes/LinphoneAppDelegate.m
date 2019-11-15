@@ -411,7 +411,7 @@
 - (void)processRemoteNotification:(NSDictionary *)userInfo {
 	if (linphone_core_get_calls(LC)) {
 		// if there are calls, obviously our TCP socket shall be working
-		LOGD(@"Notification [%p] has no need to be processed because there already is an active call.", userInfo);
+		LOGD(@"Notification [%p] has no need to be processed because there already is %d active call.", userInfo, linphone_core_get_calls_nb(LC));
 		return;
 	}
 

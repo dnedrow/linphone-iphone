@@ -1874,10 +1874,10 @@ void popup_link_account_cb(LinphoneAccountCreator *creator, LinphoneAccountCreat
 	   (or skipped).
 	   Wait for this to finish the code configuration */
 
-	[NSNotificationCenter.defaultCenter addObserver:self
+	/*[NSNotificationCenter.defaultCenter addObserver:self
 	 selector:@selector(audioSessionInterrupted:)
 	 name:AVAudioSessionInterruptionNotification
-	 object:nil];
+	 object:nil];*/
 	[NSNotificationCenter.defaultCenter addObserver:self
 	 selector:@selector(globalStateChangedNotificationHandler:)
 	 name:kLinphoneGlobalStateUpdate

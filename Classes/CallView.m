@@ -536,6 +536,9 @@ static void hideSpinner(LinphoneCall *call, void *user_data) {
 }
 
 - (void)callUpdate:(LinphoneCall *)call state:(LinphoneCallState)state animated:(BOOL)animated {
+	if (call) {
+	LOGI(@"**** number of calls: %d, call id %@", linphone_core_get_calls_nb(LC), [NSString stringWithUTF8String:linphone_call_log_get_call_id(linphone_call_get_call_log(call))]);
+	}
 	[self updateBottomBar:call state:state];
 	if (hiddenVolume) {
 		[PhoneMainView.instance setVolumeHidden:FALSE];

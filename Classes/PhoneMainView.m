@@ -386,6 +386,7 @@ static RootViewManager *rootViewManagerInstance = nil;
 			break;
 		}
 		case LinphoneCallStreamsRunning: {
+			// TODO callkit backgroud, the view foreground
 			[self changeCurrentView:CallView.compositeViewDescription];
 			/*if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max && call) {
 				NSString *callId =

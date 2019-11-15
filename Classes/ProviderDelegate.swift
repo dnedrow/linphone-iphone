@@ -9,6 +9,7 @@ import Foundation
 import CallKit
 import UIKit
 import linphonesw
+import AVFoundation
 
 import os
 
@@ -16,18 +17,22 @@ class ProviderDelegate: NSObject {
 	// 1.
 	//private let callManager: CallManager
 	private let provider: CXProvider
+	private let callController: CXCallController
 	
-	var uuids: [AnyHashable : UUID] = [:]
+	var uuids: [String : UUID] = [:]
+	var calls: [UUID : String] = [:]
 	
 	//init(callManager: CallManager) {
 	override init() {
 		//self.callManager = callManager
 		// 2.
 		provider = CXProvider(configuration: ProviderDelegate.providerConfiguration)
+		callController = CXCallController()
 		
 		super.init()
 		// 3.
 		provider.setDelegate(self, queue: nil)
+		callController.callObserver.setDelegate(self, queue: nil)
 	}
 	
 	// 4.
@@ -85,10 +90,14 @@ class ProviderDelegate: NSObject {
 extension ProviderDelegate: CXProviderDelegate {
 	func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
 		print("CallKit: Call ended");
-		let call = CallManager.instance().lc!.currentCall;
+		let uuid = action.callUUID
+		let callId = calls[uuid]
+		let call = CallManager.instance().callByCallId(callId: callId)
 		if (call != nil) {
 			do {
 				try call!.terminate()
+				uuids.removeValue(forKey: callId!)
+				calls.removeValue(forKey: uuid)
 			} catch {
 			}
 		}
@@ -97,29 +106,107 @@ extension ProviderDelegate: CXProviderDelegate {
 	
 	func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
 		print("CallKit: Call answered.")
-		CallManager.instance().acceptCall(call: CallManager.instance().lc!.currentCall,hasVideo: false)
+		let uuid = action.callUUID
+		let callId = calls[uuid]
+		let call = CallManager.instance().callByCallId(callId: callId)
+		if (call == nil) {
+			action.fulfill()
+			return
+		}
+		CallManager.instance().acceptCall(call: call,hasVideo: false)
+		action.fulfill()
+	}
+	
+	func providerDidReset(_ provider: CXProvider) {
+		// TODO not sure useful
+		print("CallKit: did reset.")
+		try? CallManager.instance().lc?.terminateAllCalls()
+		uuids.removeAll()
+		calls.removeAll()
+	}
+
+	func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
+		print("CallKit: Call set held.")
+		let uuid = action.callUUID
+		let callId = calls[uuid]
+		let call = CallManager.instance().callByCallId(callId: callId)
+		if (call == nil) {
+			action.fulfill()
+			return
+		}
+		if (action.isOnHold) {
+			try? call?.pause()
+		}
 		action.fulfill()
 	}
 	
 	func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+		print("CallKit: Call started.")
+		let uuid = action.callUUID
+		let callId = calls[uuid]
+		let call = CallManager.instance().callByCallId(callId: callId)
+		if (call == nil) {
+			action.fulfill()
+			return
+		}
+		let state: Call.State = call!.state
+		switch state {
+		case .Paused:
+			try? call?.resume()
+			break
+		default:
+			break
+		}
+		action.fulfill()
 	}
 	
-	func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
-	}
 	
 	func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+		print("CallKit: Call muted.")
 	}
 	
 	func provider(_ provider: CXProvider, perform action: CXSetGroupCallAction) {
+		print("CallKit: Call group .")
 	}
 	
 	func provider(_ provider: CXProvider, perform action: CXPlayDTMFCallAction) {
+		print("CallKit: Call dtmf .")
 	}
 	
 	func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
-		
+		print("CallKit: Call time out.")
 	}
 	
-	func providerDidReset(_ provider: CXProvider) {
+	func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+		
+	}
+}
+
+// MARK: - CXCallObserverDelegate
+extension ProviderDelegate: CXCallObserverDelegate {
+	func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
+		print("CallKit, call changed")
+		if call.hasConnected == true && call.hasEnded == false && call.isOnHold == false {
+			print("Connected")
+			
+			let uuid = call.uuid
+			let callId = calls[uuid]
+			let holdcall = CallManager.instance().callByCallId(callId: callId)
+			if (holdcall == nil) {
+				return
+			}
+			let state: Call.State = holdcall!.state
+			switch state {
+			case .Paused:
+				do {
+					try holdcall?.resume()
+				} catch {
+					print("\(error)")
+				}
+				break
+			default:
+				break
+			}
+		}
 	}
 }

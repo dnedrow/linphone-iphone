@@ -76,6 +76,17 @@ import CallKit
 			print("CallKit: error ... \(error)")
 		}
 	}
+	
+	func callByCallId(callId: String?) -> Call? {
+		if (callId == nil) {
+			return nil
+		}
+		let calls = lc?.calls
+		if let callTmp = calls?.first(where: { $0.callLog?.callId == callId }) {
+			return callTmp
+		}
+		return nil
+	}
 }
 
 class CoreManager: CoreDelegate {
@@ -87,13 +98,16 @@ class CoreManager: CoreDelegate {
 		switch cstate {
 		case .IncomingReceived:
 			let callLog = call.callLog
-			let callId = callLog?.callId
+			let callId = callLog!.callId
 			let uuid = UUID()
 			CallManager.instance().providerDelegate.uuids.updateValue(uuid, forKey: callId)
+			let num = CallManager.instance().providerDelegate.uuids.count
+			CallManager.instance().providerDelegate.calls.updateValue(callId, forKey: uuid)
 			CallManager.instance().displayIncomingCall(call: call, uuid: uuid, handle: address, completion: nil)
 			break
 		case .End,
 			 .Error:
+			print("CallKit: onCallStateChanged, call end or error")
 			let log = call.callLog
 			if log == nil || log?.status == Call.Status.Missed || log?.status == Call.Status.Aborted || log?.status == Call.Status.EarlyAborted  {
 				// Configure the notification's payload.
@@ -113,14 +127,17 @@ class CoreManager: CoreDelegate {
 			
 			// end CallKit
 			let callId = log?.callId
-			let uuid = CallManager.instance().providerDelegate.uuids[callId]
+			let uuid = CallManager.instance().providerDelegate.uuids["\(callId!)"]
+			let table = CallManager.instance().providerDelegate.uuids
 			if (uuid != nil) {
 				let controller = CXCallController()
 				let transaction = CXTransaction(action:
 					CXEndCallAction(call: uuid!))
 				controller.request(transaction,completion: { error in })
+				print("CallKit: send CXEndCallAction")
 			} else {
 				// TODO
+				print("CallKit: can not send CXEndCallAction, because uuis is nil")
 			}
 			
 			break
