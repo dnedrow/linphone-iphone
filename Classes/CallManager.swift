@@ -97,13 +97,15 @@ class CoreManager: CoreDelegate {
 		
 		switch cstate {
 		case .IncomingReceived:
-			let callLog = call.callLog
-			let callId = callLog!.callId
-			let uuid = UUID()
-			CallManager.instance().providerDelegate.uuids.updateValue(uuid, forKey: callId)
-			let num = CallManager.instance().providerDelegate.uuids.count
-			CallManager.instance().providerDelegate.calls.updateValue(callId, forKey: uuid)
-			CallManager.instance().displayIncomingCall(call: call, uuid: uuid, handle: address, completion: nil)
+			if UIApplication.shared.applicationState != UIApplication.State.active {
+				let callLog = call.callLog
+				let callId = callLog!.callId
+				let uuid = UUID()
+				CallManager.instance().providerDelegate.uuids.updateValue(uuid, forKey: callId)
+				CallManager.instance().providerDelegate.calls.updateValue(callId, forKey: uuid)
+				CallManager.instance().displayIncomingCall(call: call, uuid: uuid, handle: address, completion: nil)
+			} 
+			
 			break
 		case .End,
 			 .Error:
@@ -128,7 +130,6 @@ class CoreManager: CoreDelegate {
 			// end CallKit
 			let callId = log?.callId
 			let uuid = CallManager.instance().providerDelegate.uuids["\(callId!)"]
-			let table = CallManager.instance().providerDelegate.uuids
 			if (uuid != nil) {
 				let controller = CXCallController()
 				let transaction = CXTransaction(action:
