@@ -294,7 +294,7 @@
         _shortcutItem = shortcutItem;
         return NO;
     }
-
+	
 	return YES;
 }
 

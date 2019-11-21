@@ -16,6 +16,7 @@ import CallKit
 	static var theCallManager: CallManager?
 	var lc: Core?
 	var configDb: Config?
+	let callController = CXCallController()
 	
 	
 	let manager = CoreManager()
@@ -87,6 +88,35 @@ import CallKit
 		}
 		return nil
 	}
+	
+	@objc func startCall(handle: String, videoEnabled: Bool, callId: String) {
+		// 1
+		let uuid = UUID()
+		
+		let handle = CXHandle(type: .phoneNumber, value: handle)
+		// 2
+		let startCallAction = CXStartCallAction(call: uuid, handle: handle)
+		// 3
+		startCallAction.isVideo = videoEnabled
+		let transaction = CXTransaction(action: startCallAction)
+		
+		
+		print("CallKit: outgoing call \(uuid)  callId \(callId)")
+		CallManager.instance().providerDelegate.uuids.updateValue(uuid, forKey: callId)
+		CallManager.instance().providerDelegate.calls.updateValue(callId, forKey: uuid)
+		
+		requestTransaction(transaction)
+	}
+	
+	private func requestTransaction(_ transaction: CXTransaction) {
+		callController.request(transaction) { error in
+			if let error = error {
+				print("Error requesting transaction: \(error)")
+			} else {
+				print("Requested transaction successfully")
+			}
+		}
+	}
 }
 
 class CoreManager: CoreDelegate {
@@ -107,6 +137,11 @@ class CoreManager: CoreDelegate {
 			} 
 			
 			break
+		case .OutgoingRinging:
+			let callLog = call.callLog
+			let callId = callLog!.callId
+			CallManager.instance().startCall(handle: address, videoEnabled: false, callId: callId)
+			break
 		case .End,
 			 .Error:
 			print("CallKit: onCallStateChanged, call end or error")
@@ -125,21 +160,23 @@ class CoreManager: CoreDelegate {
 						print("CallKit: Error while adding notification request : \(error!.localizedDescription)")
 					}
 				}
+				
+				// end CallKit
+				let callId = log?.callId
+				let uuid = CallManager.instance().providerDelegate.uuids["\(callId!)"]
+				if (uuid != nil) {
+					let controller = CXCallController()
+					let transaction = CXTransaction(action:
+						CXEndCallAction(call: uuid!))
+					controller.request(transaction,completion: { error in })
+					print("CallKit: send CXEndCallAction")
+				} else {
+					// TODO
+					print("CallKit: can not send CXEndCallAction, because uuis is nil")
+				}
 			}
 			
-			// end CallKit
-			let callId = log?.callId
-			let uuid = CallManager.instance().providerDelegate.uuids["\(callId!)"]
-			if (uuid != nil) {
-				let controller = CXCallController()
-				let transaction = CXTransaction(action:
-					CXEndCallAction(call: uuid!))
-				controller.request(transaction,completion: { error in })
-				print("CallKit: send CXEndCallAction")
-			} else {
-				// TODO
-				print("CallKit: can not send CXEndCallAction, because uuis is nil")
-			}
+			
 			
 			break
 		default:

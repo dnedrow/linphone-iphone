@@ -2509,6 +2509,7 @@ static int comp_call_state_paused(const LinphoneCall *call, const void *param) {
 	} else {
 		[self doCall:iaddr];
 	}*/
+	[self doCall:iaddr];
 }
 
 - (BOOL)doCall:(const LinphoneAddress *)iaddr {

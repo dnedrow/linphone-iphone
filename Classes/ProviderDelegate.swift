@@ -74,6 +74,7 @@ class ProviderDelegate: NSObject {
 		provider.reportNewIncomingCall(with: uuid, update: update) { error in
 		if error == nil {
 		} else {
+			// TODO not used for now
 			os_log("CallKit: cannot complete incoming call with call-id: and UUID: [%@] from [%@] caused by [%@]", uuid.description, handle, error?.localizedDescription ?? "")
 			let code = (error as NSError?)?.code
 			if code == CXErrorCodeIncomingCallError.filteredByBlockList.rawValue || code == CXErrorCodeIncomingCallError.filteredByDoNotDisturb.rawValue {
@@ -89,15 +90,17 @@ class ProviderDelegate: NSObject {
 // MARK: - CXProviderDelegate
 extension ProviderDelegate: CXProviderDelegate {
 	func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
-		print("CallKit: Call ended");
+		
 		let uuid = action.callUUID
+		print("CallKit: Call ended \(uuid)");
 		let callId = calls[uuid]
 		let call = CallManager.instance().callByCallId(callId: callId)
 		if (call != nil) {
 			do {
-				try call!.terminate()
+				// remove first, otherwise CXEndCallAction will be call more than one times
 				uuids.removeValue(forKey: callId!)
 				calls.removeValue(forKey: uuid)
+				try call!.terminate()
 			} catch {
 			}
 		}
@@ -142,21 +145,8 @@ extension ProviderDelegate: CXProviderDelegate {
 	
 	func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
 		print("CallKit: Call started.")
-		let uuid = action.callUUID
-		let callId = calls[uuid]
-		let call = CallManager.instance().callByCallId(callId: callId)
-		if (call == nil) {
-			action.fulfill()
-			return
-		}
-		let state: Call.State = call!.state
-		switch state {
-		case .Paused:
-			try? call?.resume()
-			break
-		default:
-			break
-		}
+		// TODO outgoing call
+		self.provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
 		action.fulfill()
 	}
 	
